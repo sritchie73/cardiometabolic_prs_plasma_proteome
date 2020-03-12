@@ -17,15 +17,22 @@ The following software and versions were used to run these scripts:
  - GNU bash version 4.2.46(2) (shell environment used to run bash scripts)
  - PLINK v1.90b6.10 64-bit (17 Jun 2019) (www.cog-genomics.org/plink/1.9/), aliased as plink1.9 in the scripts.
  - PLINK v2.00a2LM AVX2 Intel (24 Jul 2019) (www.cog-genomics.org/plink/2.0/), aliased as plink2 in the scripts.
- - R version 3.6
- - R package data.table version 1.12.8
- - R package foreach version 1.4.4
- - R package doMC version 1.3.5
- - R package XML version 3.98-1.20
- - R package biomaRt version 2.40.3
- - R package openxlsx version 4.1.0.1
- - R package ggplot2 version 3.2.0
- 
+ - R version 3.6, along with R packages:
+     - data.table version 1.12.8
+     - foreach version 1.4.4
+     - doMC version 1.3.5
+     - XML version 3.98-1.20
+     - biomaRt version 2.40.3 (Bioconductor package)
+     - openxlsx version 4.1.0.1
+     - ggplot2 version 3.2.0
+     - MendelianRandomization version 0.4.1
+     - ggrepel version 0.8.1
+ - The BGEN software suite (https://www.well.ox.ac.uk/~gav/bgen_format/software.html) including:
+     - bgenix version 1.1.4
+     - qctool version 2.0.5, alised as qctool2 in the scripts
+     - ldstore version 1.1
+ - SQLite version 3.30.1, aliased as sqlite3 in the scripts.
+
 Inkscape version 0.92.3 was used to layout and annotate figures from the figure components generated within the R scripts. Microsoft Office Professional Plus 2016 was used to draft the manuscript (Microsoft Word) and curate supplemental tables (Microsoft Excel) on Windows 10 Enterprise edition.
 
 # Underlying Data
