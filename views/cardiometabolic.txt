@@ -1,0 +1,6 @@
+GRS_name	Display_name	Summary_stats	Trait
+CAD_metaGRS	Coronary Artery Disease	-	Coronary artery disease
+CKD_2019	Chronic Kidney Disease	CKDGen 2019	Chronic kidney disease
+T2D_2018	Type 2 Diabetes	DIAGRAM 2018	Type 2 diabetes
+Afib_2018	Atrial Fibrillation	Nielsen JB et al. Nat Genet (2018)	Atrial fibrillation
+StrokeAS_UKBv3_2018	Stroke	MEGASTROKE 2018	Any stroke
