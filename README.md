@@ -6,7 +6,7 @@ This code has not been designed to regenerate the results as-is for third-partie
 
 # Repository Structure
 
-All scripts are housed under the src/ directory in this repository. At the top level, scripts are conceptually organised by analysis task, with one job submission script per task. For example, src/01_calculate_all_grs.sh is a job submission script that submits a sequence of jobs to the cluster, with the individual job scripts located in src/01_job_scripts/.
+All scripts are housed under the src/ directory in this repository. At the top level, scripts are conceptually organised by analysis task, with one job submission script per task. For example, src/01_calculate_all_grs.sh is a job submission script that submits a sequence of jobs to the cluster, with the individual job scripts located in src/01_job_scripts/. These are designed to be part of a wider pipeline to test associations between an arbitrary number of polygenic scores (not included in this paper) with molecular measurements in INTERVAL from various high-throughput platforms (not included in this paper). Components of this pipeline that were not used in this paper are not included in this repositor, hence while the job scripts in this pipeline are sequential in run order, some numeric steps are not included in this repo. 
 
 # Software and versions used:
 
@@ -20,6 +20,12 @@ The following software and versions were used to run these scripts:
  - R version 3.6
  - R package data.table version 1.12.8
  - R package foreach version 1.4.4
+ - R package doMC version 1.3.5
+ - R package XML version 3.98-1.20
+ - R package biomaRt version 2.40.3
+ - R package openxlsx version 4.1.0.1
+ 
+Inkscape version 0.92.3 was used to layout and annotate figures from the figure components generated within the R scripts. Microsoft Office Professional Plus 2016 was used to draft the manuscript (Microsoft Word) and curate supplemental tables (Microsoft Excel) on Windows 10 Enterprise edition.
 
 # Underlying Data
 
