@@ -1,3 +1,26 @@
-# Watch this space
+# README
 
-Code and README are in the process of being uploaded
+This repository houses and documents the code used to generate the results in the study Ritchie SC *et al.* Integrative analysis of the plasma proteome and polygenic risk of cardiometabolic diseases. *bioRxiv*, doi: 10.1101/2019.12.14.876474 (https://www.biorxiv.org/content/10.1101/2019.12.14.876474v2.article-info).
+
+This code has not been designed to regenerate the results as-is for third-parties. It has been written to run on a high-performance computing cluster at the University of Cambridge - it includes job submission scripts that are written specifically for this cluster's setup, and cannot which cannot be generalised. The underlying data is also not provided as part of this repo - these must be downloaded separately (see Underlying Data section below) and stored in the locations given in the hard-coded filepaths in these scripts. 
+
+# Repository Structure
+
+All scripts are housed under the src/ directory in this repository. At the top level, scripts are conceptually organised by analysis task, with one job submission script per task. For example, src/01_calculate_all_grs.sh is a job submission script that submits a sequence of jobs to the cluster, with the individual job scripts located in src/01_job_scripts/.
+
+# Software and versions used:
+
+The following software and versions were used to run these scripts:
+
+ - Scientific Linux release 7.7 (Nitrogen) (HPC operating system)
+ - slurm version 19.05.5 (HPC queue manager and job submission system)
+ - GNU bash version 4.2.46(2) (shell environment used to run bash scripts)
+ - PLINK v1.90b6.10 64-bit (17 Jun 2019) (www.cog-genomics.org/plink/1.9/), aliased as plink1.9 in the scripts.
+ - PLINK v2.00a2LM AVX2 Intel (24 Jul 2019) (www.cog-genomics.org/plink/2.0/), aliased as plink2 in the scripts.
+ - R version 3.6
+ - R package data.table version 1.12.8
+ - R package foreach version 1.4.4
+
+# Underlying Data
+
+All data used in this study is publicly available or deposited in a public repository. Genetic data, proteomic data, and basic cohort characteristics for the INTERVAL cohort are available via the European Genotype-phenome Archive (EGA) with study accession EGAS00001002555 (https://www.ebi.ac.uk/ega/studies/EGAS00001002555). Dataset access is subject to approval by a Data Access Committee: these data are not publicly available as they contain potentially identifying and sensitive patient information. All other data used in this study is publicly available without restriction. The PRS used for CAD in this study is available to download at the Polygenic Score Catalog with score accession PGS000018 (https://www.pgscatalog.org/pgs/PGS000018). The other PRSs used in this study are available through Figshare at https://dx.doi.org/10.6084/m9.figshare.11369103. GWAS summary statistics used to generate these PRSs are available to download through the GWAS Catalog (https://www.ebi.ac.uk/gwas/) with study accessions GCST008065 (CKD), GCST007517 (T2D), GCST006414 (Atrial fibrillation), and GCST006906 (Stroke, all causes). pQTL summary statistics used in Figure 3, Figure S4, Table S4, and Table S6 are available to download from https://www.phpc.cam.ac.uk/ceu/proteins/. GWAS summary statistics used for Mendelian randomisation (Figure 3, Table S6) are available to download through the GWAS Catalog (https://www.ebi.ac.uk/gwas/) with study accessions GCST004787 (CAD), GCST008065 (CKD), and GCST007518 (T2D). Correlations between tissue-specific expression and cardiometabolic traits in the hybrid mouse diversity panel used in Figure 4 and Table S10 are available to download through the systems genetics resource (https://systems.genetics.ucla.edu). Tissue-specific gene expression data and cardiometabolic phenotypes in the F2 cross of the inbred ApoE-/- C57BL/6J and C3H/HeJ strains used in Figure 4 and Table S10 are available to download from Sage BioNetworks at https://www.synapse.org/#!Synapse:syn4497. Tissue-specific gene expression data in C57BL/6J mice subject to dietary intervention generated for this study and used in Figure S5 and Table S11 is available in Table S12.
