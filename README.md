@@ -35,6 +35,8 @@ The following software and versions were used to run these scripts:
      - ggnewscale version 0.3.0
      - RColorBrewer version 1.1-2
      - pheatmap version 1.0.12 (development version, https://github.com/raivokolde/pheatmap)
+     - impute version 1.57.0 (Bioconductor package)
+     - WGCNA version 1.68
  - The BGEN software suite (https://www.well.ox.ac.uk/~gav/bgen_format/software.html) including:
      - bgenix version 1.1.4
      - qctool version 2.0.5, alised as qctool2 in the scripts
