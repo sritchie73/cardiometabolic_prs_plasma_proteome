@@ -31,10 +31,12 @@ The following software and versions were used to run these scripts:
      - ggplot2 version 3.3.0
      - MendelianRandomization version 0.4.1
      - ggrepel version 0.8.1
-     - ggrastr version 0.1.7
+     - ggrastr version 0.1.7 (github package, https://github.com/VPetukhov/ggrastr)
      - ggnewscale version 0.3.0
      - RColorBrewer version 1.1-2
      - pheatmap version 1.0.12 (development version, https://github.com/raivokolde/pheatmap)
+     - impute version 1.57.0 (Bioconductor package)
+     - WGCNA version 1.68
  - The BGEN software suite (https://www.well.ox.ac.uk/~gav/bgen_format/software.html) including:
      - bgenix version 1.1.4
      - qctool version 2.0.5, alised as qctool2 in the scripts
