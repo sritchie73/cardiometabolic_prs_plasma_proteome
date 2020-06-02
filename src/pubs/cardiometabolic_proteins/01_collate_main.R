@@ -4,13 +4,17 @@ library(foreach)
 library(openxlsx)
 library(RColorBrewer)
 library(pheatmap)
+library(seriation)
 library(ggplot2)
 library(ggnewscale)
 library(ggrepel)
 library(ggrastr)
 library(gridExtra)
+library(NetRep)
 
 source("src/utilities/format_pval.R")
+source("src/utilities/prot_pval.R")
+source("src/07_job_scripts/07_helpers/mr_functions.R") # for dose response curves
 
 # Explanation for useDingbats=FALSE in ggsave():
 # 
@@ -120,7 +124,7 @@ prot_info <- prot_info[Type == "Protein"]
 # Add information, filter, average associations across aptamers, and filter at FDR < 0.05:
 assocs <- assocs[trait %in% prot_info$variable]
 assocs <- assocs[prot_info, on = .(trait=variable), nomatch=0]
-prot_assocs <- assocs[, .(beta = mean(beta), l95 = mean(l95), u95 = mean(u95), pval = mean(pval)), 
+prot_assocs <- assocs[, .(beta = mean(beta), l95 = mean(l95), u95 = mean(u95), pval = prot_pvalue(pval, beta)), 
   by = .(grs, Target=TargetFullName, UniProt=UniProt.Id.Current.at.Uniprot, 
          Gene.Name, Entrez.Gene.ID, chr, start, end, strand)] 
 prot_assocs[, fdr := p.adjust(pval, method="fdr"), by=grs]
@@ -278,6 +282,7 @@ olink_info <- fread("analyses/processed_traits/olink_proteins/trait_info.tsv")
 olink_assocs <- olink_assocs[olink_info, on = .(trait=variable), nomatch=0]
 olink_assocs[, panel := gsub("_.*", "", trait)]
 olink_assocs[grs_info, on = .(PRS=GRS_name), PRS := Display_name]
+olink_assocs <- olink_assocs[panel != "neu"] # don't have agreements in place to use this data.
 
 soma_assocs <- comb_assocs[Prot.FDR < 0.1, .(PRS, Gene, UniProt, 
                            Beta=Prot.Beta, L95=Prot.L95, 
@@ -438,7 +443,7 @@ comp <- comp[adj, on = .(PRS, Aptamer), nomatch=0]
 comp <- comp[, .(Prot.Beta.Adj=mean(Apt.Beta.Adj),
                  Prot.L95.Adj=mean(Apt.L95.Adj),
                  Prot.U95.Adj=mean(Apt.U95.Adj),
-                 Prot.Pvalue.Adj=mean(Apt.Pvalue.Adj)),
+                 Prot.Pvalue.Adj=prot_pvalue(Apt.Pvalue.Adj, Apt.Beta.Adj)),
              by=.(PRS, Gene, UniProt, Prot.Beta, Prot.L95, Prot.U95, 
                   Prot.Pvalue, Prot.FDR, Adjustment)]
 
@@ -587,7 +592,7 @@ multi_prs <- foreach(aptvar = unique(prot_pairs$variable), .combine=rbind) %do% 
 
 # Collapse to protein level (relevant for SHBG only)
 multi_prs <- multi_prs[, .(Prot.Beta = mean(beta), Prot.L95 = mean(l95), 
-                           Prot.U95 = mean(u95), Prot.Pvalue = mean(pval)),
+                           Prot.U95 = mean(u95), Prot.Pvalue = prot_pvalue(pval, beta)),
                         by=.(PRS, Gene)]
 
 comp <- merge(multi_prs, unique(comb_assocs, by=c("PRS", "Gene")), 
@@ -648,7 +653,7 @@ has_pQTLs <- unique(pqtl_adj[variable != "grs", .(PRS, Gene, Aptamer)])
 # Summarise at the protein level
 pqtl_prot_adj <- pqtl_adj[variable == "grs", 
                           .(Prot.Beta.Adj=mean(beta), Prot.L95.Adj=mean(l95),
-                            Prot.U95.Adj=mean(u95), Prot.Pvalue.Adj=mean(pval)),
+                            Prot.U95.Adj=mean(u95), Prot.Pvalue.Adj=prot_pvalue(pval, beta)),
                           by=.(PRS, Gene, UniProt)]
 
 # Combine tables
@@ -832,7 +837,7 @@ g <- ggplot(comp) +
 ggsave(g, width=7.2, height=2.8, file=sprintf("%s/pqtl_removed.pdf", out_dir), useDingbats=FALSE)
 
 # --------------------------------------------------------------
-# Collate MR results
+# Collate MR and coloc results
 # --------------------------------------------------------------
 
 # Load results

@@ -2,6 +2,7 @@ library(data.table)
 library(foreach)
 library(openxlsx)
 source("src/utilities/flip_strand.R")
+source("src/utilities/prot_pval.R")
 
 # Determine GRS we're working with
 if (!exists("grs")) {
@@ -27,7 +28,7 @@ info <- fread("analyses/processed_traits/somalogic_proteins/trait_info.tsv")
 assocs <- fread(sprintf("analyses/univariate_associations/%s/somalogic_proteins/associations.tsv", grs))
 assocs <- assocs[info, on=.(trait=variable), nomatch=0]
 assocs <- assocs[Type == "Protein"]
-prot_assocs <- assocs[, .(pval = mean(pval)),by=.(Target, Gene.Name, UniProt=UniProt.Id.Current.at.Uniprot)]
+prot_assocs <- assocs[, .(pval = prot_pvalue(pval, beta)),by=.(Target, Gene.Name, UniProt=UniProt.Id.Current.at.Uniprot)]
 prot_assocs[, fdr := p.adjust(pval, method="fdr")]
 prot_assocs <- prot_assocs[fdr < 0.05]
 assocs <- assocs[prot_assocs[,.(Target, Gene.Name, UniProt)], 
@@ -173,7 +174,7 @@ instruments <- foreach(gwas = GWASs, .combine=rbindf) %do% {
       # Average variant effects across aptamers - note this assumes the variant has the
       # same effect allele across (all) aptamers - the end user should double check this!
       combined_prot <- combined[, .(effect.pqtl=mean(effect.pqtl), se.pqtl=mean(se.pqtl),
-                                   P.pqtl=mean(P.pqtl)),
+                                   P.pqtl=prot_pvalue(P.pqtl, effect.pqtl)),
                                    by=.(chr, pos, EA, OA, r2, EAF.pqtl, RSID, EAF.gwas,
                                    effect.gwas, se.gwas, P.gwas)]
 
@@ -307,7 +308,7 @@ instruments <- foreach(gwas = GWASs, .combine=rbindf) %do% {
 
       # create averages across aptamers
       combined_prot <- combined[, .(effect.pqtl=mean(effect.pqtl), se.pqtl=mean(se.pqtl),
-                                     P.pqtl=mean(P.pqtl)),
+                                     P.pqtl=prot_pvalue(P.pqtl, effect.pqtl)),
                                    by=.(chr, pos, EA, OA, EAF.pqtl, RSID, EAF.gwas,
                                         effect.gwas, se.gwas, P.gwas)]
 

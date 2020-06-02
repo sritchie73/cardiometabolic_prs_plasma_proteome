@@ -3,6 +3,7 @@
 #  (2) Where the aptamer's pQTLs attenuate the GRS-association
 library(data.table)
 library(foreach)
+source("src/utilities/prot_pval.R")
 
 out_dir <- "analyses/grs_pqtl_removed"
 
@@ -44,7 +45,7 @@ prot_info <- prot_info[Type == "Protein"]
 # Add information, filter, average associations across aptamers, and filter at FDR < 0.05:
 assocs <- assocs[trait %in% prot_info$variable]
 assocs[prot_info, on = .(trait=variable), Target := Target]
-assocs <- assocs[, .(pval = mean(pval)), by=.(grs, Target)]
+assocs <- assocs[, .(pval = prot_pvalue(pval, beta)), by=.(grs, Target)]
 assocs[, fdr := p.adjust(pval, method="fdr"), by=grs]
 assocs <- assocs[fdr < 0.1, .(grs, Target)]
 
