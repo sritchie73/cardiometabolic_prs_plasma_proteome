@@ -145,6 +145,12 @@ cis_pQTLs <- fread("analyses/mendelian_randomisation/pqtls/cis_hierarchical_corr
 cis_pQTLs[prot_info, on = .(SOMAMER_ID), SeqId := SeqId]
 comb_assocs[cis_pQTLs, on = .(Aptamer=SeqId), cis_pQTL := "yes"]
 
+# Load in additional mass spec confirmation from Emillson et al.
+emilsson <- rbind(fill=TRUE,
+  as.data.table(read.xlsx("data/Emilsson_etal_2018/supp_tables.xlsx", sheet="Table S3", startRow=2)),
+  as.data.table(read.xlsx("data/Emilsson_etal_2018/supp_tables.xlsx", sheet="Table S4", startRow=2)))
+comb_assocs[emilsson, on = .(Gene=Gene.Symbol), MassSpecConfirmation := ifelse(is.na(MassSpecConfirmation), "Emilsson_etal_2018", MassSpecConfirmation)]
+
 # Add pretty GRS name labels
 comb_assocs[grs_info, on=.(PRS=GRS_name), PRS := Display_name]
 
@@ -436,7 +442,7 @@ adj <- foreach(grs = GRSs, .combine=rbind) %do% {
 # Merge information and collapse to protein level
 adj[prot_info, on = .(trait=variable), Aptamer := SeqId]
 adj[grs_info, on = .(grs = GRS_name), PRS := Display_name]
-comp <- comb_assocs[Prot.FDR < 0.1]
+comp <- comb_assocs[Prot.FDR < 0.05]
 adj <- adj[,.(PRS, Adjustment = model, Aptamer, Apt.Beta.Adj=beta, 
               Apt.L95.Adj=l95, Apt.U95.Adj=u95, Apt.Pvalue.Adj=pval)]
 comp <- comp[adj, on = .(PRS, Aptamer), nomatch=0]
