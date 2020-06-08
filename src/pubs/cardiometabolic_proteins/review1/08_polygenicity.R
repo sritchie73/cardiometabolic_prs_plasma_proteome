@@ -10,7 +10,7 @@ source("src/utilities/prot_pval.R")
 out_dir="analyses/pub/cardiometabolic_proteins/review1"
 
 soma_assocs <- fread("analyses/pub/cardiometabolic_proteins/all_assocs.tsv")
-soma_assocs <- soma_assocs[Prot.FDR < 0.05, .(PRS, Gene, Beta=Prot.Beta, L95=Prot.L95, U95=Prot.U95, Pvalue=Prot.Pvalue)]
+soma_assocs <- soma_assocs[Prot.FDR < 0.05, .(PRS, Gene, Target, UniProt, Beta=Prot.Beta, L95=Prot.L95, U95=Prot.U95, Pvalue=Prot.Pvalue)]
 soma_assocs[PRS == "Coronary Artery Disease", PRS := "CAD_metaGRS"]
 soma_assocs[PRS == "Chronic Kidney Disease", PRS := "CKD_2019"]
 soma_assocs[PRS == "Type 2 Diabetes", PRS := "T2D_2018"]
@@ -240,12 +240,12 @@ cis_hier <- fread("analyses/mendelian_randomisation/pqtls/cis_hierarchical_corre
 cis_hier[soma_info, on = .(SOMAMER_ID), c("Gene", "Target", "UniProt") := .(Gene.Name, TargetFullName, UniProt.Id.Current.at.Uniprot)]
 
 # Manhattan plot of pQTLs associations with the protein for variants in the PRS
-pqtl_manhattan <- ggplot(gwas[Gene == "TIMP4"][prs[PRS == "T2D_2018"], on = .(chr, pos), nomatch=0]) +
+pqtl_manhattan <- ggplot(gwas[Gene == "SHBG"][prs[PRS == "T2D_2018"], on = .(chr, pos), nomatch=0]) +
   aes(x=cumul_pos, y=-log10(pval), color=factor(chr %% 2)) +
-  geom_vline(xintercept=cis_windows[Gene == "TIMP4", cumulative_TSS], color="#fd8d3c") +
+  geom_vline(xintercept=cis_windows[Gene == "SHBG", cumulative_TSS], color="#fd8d3c") +
   geom_point_rast(shape=19, raster.width=10, raster.height=1, size=1, raster.dpi=300) +
   geom_hline(yintercept=-log10(1.5e-11), linetype=2, color="red") + # Trans pQTL significance threshold from Sun et al. 2018
-  #geom_hline(yintercept=-log10(cis_hier[Gene == "TIMP4", max(P)]), linetype=2, color="#fd8d3c") + # Cis pQTL significance threshold.
+  #geom_hline(yintercept=-log10(cis_hier[Gene == "SHBG", max(P)]), linetype=2, color="#fd8d3c") + # Cis pQTL significance threshold.
   scale_colour_manual(guide=FALSE, values=c("0"="#9ecae1", "1"="#3182bd")) +
   scale_x_continuous(name="Chromosome", breaks=cumul_pos$chr_label, labels=gsub("21", "", cumul_pos$chr), expand=c(0,0.0001)) +
   scale_y_continuous(name="-log10 P-value", expand=expansion(mult=c(0, 0.1))) +
@@ -255,14 +255,14 @@ pqtl_manhattan <- ggplot(gwas[Gene == "TIMP4"][prs[PRS == "T2D_2018"], on = .(ch
     panel.grid.minor.y=element_blank(), panel.grid.major.y=element_blank(),
     axis.title = element_text(size=8), axis.text=element_text(size=8), title=element_text(size=10)
   )
-ggsave(pqtl_manhattan, width=7.2, height=1, file=sprintf("%s/T2D_PRS_to_TIMP4_pqtls.pdf", out_dir))
+ggsave(pqtl_manhattan, width=7.2, height=1, file=sprintf("%s/T2D_PRS_to_SHBG_pqtls.pdf", out_dir))
 
 # Plot similar manhattan plots for each 10 MB score region
-chunk_manhattan <- ggplot(chunk_assocs[PRS == "T2D_2018" & Gene == "TIMP4"]) +
+chunk_manhattan <- ggplot(chunk_assocs[PRS == "T2D_2018" & Gene == "SHBG"]) +
   aes(x=chunk_mid_cumul, y=-log10(Pvalue), color=factor(chr %% 2)) +
-  geom_vline(xintercept=cis_windows[Gene == "TIMP4", cumulative_TSS], color="#fd8d3c") +
-  geom_point(shape=19) +
-  geom_hline(yintercept=soma_assocs[PRS == "T2D_2018" & Gene == "TIMP4", -log10(Pvalue)], linetype=2, color="#7a0177") + 
+  geom_vline(xintercept=cis_windows[Gene == "SHBG", cumulative_TSS], color="#fd8d3c") +
+  geom_point_rast(shape=19, raster.width=12, raster.height=1, size=2, raster.dpi=300) +
+  geom_hline(yintercept=soma_assocs[PRS == "T2D_2018" & Gene == "SHBG", -log10(Pvalue)], linetype=2, color="#7a0177") + 
   geom_hline(yintercept=-log10(0.05), linetype=2, color="red") + 
   scale_colour_manual(guide=FALSE, values=c("0"="#9ecae1", "1"="#3182bd")) +
   scale_x_continuous(name="Chromosome", breaks=cumul_pos$chr_label, labels=gsub("21", "", cumul_pos$chr), expand=c(0,0)) +
@@ -273,12 +273,12 @@ chunk_manhattan <- ggplot(chunk_assocs[PRS == "T2D_2018" & Gene == "TIMP4"]) +
     panel.grid.minor.y=element_blank(), panel.grid.major.y=element_blank(),
     axis.title = element_text(size=8), axis.text=element_text(size=8), title=element_text(size=10)
   )
-ggsave(chunk_manhattan, width=7.2, height=1, file=sprintf("%s/T2D_PRS_to_TIMP4_10MB.pdf", out_dir))
+ggsave(chunk_manhattan, width=7.2, height=1, file=sprintf("%s/T2D_PRS_to_SHBG_10MB.pdf", out_dir))
 
 # Plot change in association P-value as number of chunks is decreased
 chunks_per_prs <- polygenicity[,.(total_chunks=max(n_chunks)), by=PRS]
 polygenicity[chunks_per_prs, on = .(PRS), prop_removed := (total_chunks - n_chunks)/total_chunks]
-pval_change <- ggplot(polygenicity[PRS == "T2D_2018" & Gene == "TIMP4"]) + 
+pval_change <- ggplot(polygenicity[PRS == "T2D_2018" & Gene == "SHBG"]) + 
   aes(x=prop_removed*100, y=-log10(Pvalue)) +
   geom_line(colour="#3182bd") +
   geom_hline(yintercept=-log10(0.05), linetype=2, color="red") +
@@ -290,7 +290,7 @@ pval_change <- ggplot(polygenicity[PRS == "T2D_2018" & Gene == "TIMP4"]) +
     panel.grid.minor.y=element_blank(), panel.grid.major.y=element_blank(),
     axis.title = element_text(size=8), axis.text=element_text(size=8), title=element_text(size=10)
   )
-ggsave(pval_change, width=7.2, height=1, file=sprintf("%s/T2D_PRS_to_TIMP4_polygenicity.pdf", out_dir))
+ggsave(pval_change, width=7.2, height=1, file=sprintf("%s/T2D_PRS_to_SHBG_polygenicity.pdf", out_dir))
 
 # How many chunks do we need to remove to attenuate association?
 polygenicity[chunks_per_prs, on = .(PRS), n_removed := total_chunks - n_chunks]
@@ -349,5 +349,57 @@ g <- ggplot(attenuation[boundary == "lower"], aes(x=factor(factor_order), y=pct*
   )
 ggsave(g, width=7.2, height=1.8, file=sprintf("%s/chunk_attenuation_simple.pdf", out_dir))
 
+# Show also the association between CKD PRS and FTMT
 
+# Manhattan plot of pQTLs associations with the protein for variants in the PRS
+pqtl_manhattan <- ggplot(gwas[Gene == "FTMT"][prs[PRS == "CKD_2019"], on = .(chr, pos), nomatch=0]) +
+  aes(x=cumul_pos, y=-log10(pval), color=factor(chr %% 2)) +
+  geom_vline(xintercept=cis_windows[Gene == "FTMT", cumulative_TSS], color="#fd8d3c") +
+  geom_point_rast(shape=19, raster.width=10, raster.height=1, size=1, raster.dpi=300) +
+  geom_hline(yintercept=-log10(1.5e-11), linetype=2, color="red") + # Trans pQTL significance threshold from Sun et al. 2019
+  #geom_hline(yintercept=-log10(cis_hier[Gene == "FTMT", max(P)]), linetype=2, color="#fd8d3c") + # Cis pQTL significance threshold.
+  scale_colour_manual(guide=FALSE, values=c("0"="#9ecae1", "1"="#3182bd")) +
+  scale_x_continuous(name="Chromosome", breaks=cumul_pos$chr_label, labels=gsub("21", "", cumul_pos$chr), expand=c(0,0.0001)) +
+  scale_y_continuous(name="-log10 P-value", expand=expansion(mult=c(0, 0.1))) +
+  theme_bw() +
+  theme(
+    panel.grid.major.x = element_blank(), panel.grid.minor.x=element_blank(), 
+    panel.grid.minor.y=element_blank(), panel.grid.major.y=element_blank(),
+    axis.title = element_text(size=8), axis.text=element_text(size=8), title=element_text(size=10)
+  )
+ggsave(pqtl_manhattan, width=7.2, height=1, file=sprintf("%s/CKD_PRS_to_FTMT_pqtls.pdf", out_dir))
 
+# Plot similar manhattan plots for each 10 MB score region
+chunk_manhattan <- ggplot(chunk_assocs[PRS == "CKD_2019" & Gene == "FTMT"]) +
+  aes(x=chunk_mid_cumul, y=-log10(Pvalue), color=factor(chr %% 2)) +
+  geom_vline(xintercept=cis_windows[Gene == "FTMT", cumulative_TSS], color="#fd8d3c") +
+  geom_point_rast(shape=19, raster.width=12, raster.height=1, size=2, raster.dpi=300) +
+  geom_hline(yintercept=soma_assocs[PRS == "CKD_2019" & Gene == "FTMT", -log10(Pvalue)], linetype=2, color="#7a0177") + 
+  geom_hline(yintercept=-log10(0.05), linetype=2, color="red") + 
+  scale_colour_manual(guide=FALSE, values=c("0"="#9ecae1", "1"="#3182bd")) +
+  scale_x_continuous(name="Chromosome", breaks=cumul_pos$chr_label, labels=gsub("21", "", cumul_pos$chr), expand=c(0,0)) +
+  scale_y_continuous(name="-log10 P-value", expand=expansion(mult=c(0, 0.1))) +
+  theme_bw() +
+  theme(
+    panel.grid.major.x = element_blank(), panel.grid.minor.x=element_blank(), 
+    panel.grid.minor.y=element_blank(), panel.grid.major.y=element_blank(),
+    axis.title = element_text(size=8), axis.text=element_text(size=8), title=element_text(size=10)
+  )
+ggsave(chunk_manhattan, width=7.2, height=1, file=sprintf("%s/CKD_PRS_to_FTMT_10MB.pdf", out_dir))
+
+# Plot change in association P-value as number of chunks is decreased
+chunks_per_prs <- polygenicity[,.(total_chunks=max(n_chunks)), by=PRS]
+polygenicity[chunks_per_prs, on = .(PRS), prop_removed := (total_chunks - n_chunks)/total_chunks]
+pval_change <- ggplot(polygenicity[PRS == "CKD_2019" & Gene == "FTMT"]) + 
+  aes(x=prop_removed*100, y=-log10(Pvalue)) +
+  geom_line(colour="#3182bd") +
+  geom_hline(yintercept=-log10(0.05), linetype=2, color="red") +
+  scale_x_continuous(name="Proportion of genome removed from CKD PRS", limits=c(0, 100), expand=expansion(mult=c(0.01,0.01))) +
+  scale_y_continuous(name="-log10 P-value", expand=expansion(mult=c(0.02, 0.05))) +
+  theme_bw() +
+  theme(
+    panel.grid.major.x = element_blank(), panel.grid.minor.x=element_blank(), 
+    panel.grid.minor.y=element_blank(), panel.grid.major.y=element_blank(),
+    axis.title = element_text(size=8), axis.text=element_text(size=8), title=element_text(size=10)
+  )
+ggsave(pval_change, width=7.2, height=1, file=sprintf("%s/CKD_PRS_to_FTMT_polygenicity.pdf", out_dir))
