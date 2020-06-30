@@ -37,6 +37,8 @@ The following software and versions were used to run these scripts:
      - pheatmap version 1.0.12 (development version, https://github.com/raivokolde/pheatmap)
      - impute version 1.57.0 (Bioconductor package)
      - WGCNA version 1.68
+     - RNOmni version 0.7.1
+     - cowplot version 1.0.0
  - The BGEN software suite (https://www.well.ox.ac.uk/~gav/bgen_format/software.html) including:
      - bgenix version 1.1.4
      - qctool version 2.0.5, alised as qctool2 in the scripts
