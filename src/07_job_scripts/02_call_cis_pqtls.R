@@ -1,5 +1,13 @@
 library(data.table)
 library(foreach)
+library(doMC)
+
+# Set up parallel environment
+ncores <- Sys.getenv("SLURM_CPUS_ON_NODE")
+ncores <- as.integer(ncores)
+if(is.na(ncores)) ncores <- 1
+registerDoMC(ncores)
+setDTthreads(ncores)
 
 out_dir <- "analyses/mendelian_randomisation/pqtls/"
 
@@ -41,6 +49,11 @@ cis_stats[global, on = .(SOMAMER_ID), global_fdr := i.global_fdr]
 global <- global[order(global_fdr)]
 sig_idx <- global[global_fdr < 0.05, .N]
 threshold <- global[sig_idx:(sig_idx+1), mean(local_bonf)]
+
+# Log p-value threshold for each aptamer
+cis_thresh <- cis_stats[,.(threshold = threshold/.N),by=SOMAMER_ID]
+fwrite(cis_thresh, sep="\t", quote=FALSE,
+       file=sprintf("%s/aptamer_cis_hierarchical_pthresh.tsv", out_dir))
 
 # Filter
 fwrite(cis_stats[local_bonf < threshold], sep="\t", quote=FALSE, 

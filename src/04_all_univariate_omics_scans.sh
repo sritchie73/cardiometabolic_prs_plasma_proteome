@@ -52,7 +52,7 @@ sbatch --dependency afterany:$previous_job \
        --time 1:0:0 \
        --output logs/univariate_scans/%A_%a_univariate_scan.stdout \
        --error logs/univariate_scans/%A_%a_univariate_scan.stderr \
-       --partition cardio \
-			 --account CARDIO-SL0-CPU \
+       --partition skylake,skylake-himem \
+			 --account INOUYE-SL2-CPU \
        src/04_job_scripts/univariate_scan_dispatch.sh $counter "${GRS_array[@]}" "${platform_array[@]}"
 

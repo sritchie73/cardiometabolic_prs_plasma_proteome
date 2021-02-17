@@ -57,7 +57,7 @@ prep_job=$(sbatch --dependency afterany:$previous_job \
                   --time 1:0:0 \
                   --output logs/grs_pqtl_removed/prep_geno_%j.out \
                   --error logs/grs_pqtl_removed/prep_geno_%j.err \
-									--account INOUYE-SL3-CPU \
+									--account INOUYE-SL2-CPU \
 									--partition skylake \
                   src/08_job_scripts/02_prep_geno.sh)
  
@@ -70,7 +70,7 @@ extract_job=$(sbatch --dependency afterok:$prep_job \
 									   --time 1:0:0 \
 									   --output logs/grs_pqtl_removed/extract_pQTL_ld_%j.out \
 									   --error logs/grs_pqtl_removed/extract_pQTL_ld_%j.err \
-										 --account INOUYE-SL3-CPU \
+										 --account INOUYE-SL2-CPU \
 										 --partition skylake-himem \
                      --wrap "Rscript src/08_job_scripts/03_get_pqtl_windows.R")
 
@@ -92,7 +92,7 @@ for pair in $(seq 1 $nPairs); do
 											--time 1:0:0 \
 											--output logs/grs_pqtl_removed/$GRS\_$Aptamer\_filter_pQTL_tags_%A_%a.out \
 											--error logs/grs_pqtl_removed/$GRS\_$Aptamer\_filter_pQTL_tags_%A_%a.err \
-											--account INOUYE-SL3-CPU \
+											--account INOUYE-SL2-CPU \
 											--partition skylake \
 											src/08_job_scripts/04_filter_tags.sh $GRS $Aptamer) 
 
@@ -104,7 +104,7 @@ for pair in $(seq 1 $nPairs); do
 										--time 1:0:0 \
 										--output logs/grs_pqtl_removed/$GRS\_$Aptamer\_%j_grs_strand_flip.stdout \
 										--error logs/grs_pqtl_removed/$GRS\_$Aptamer\_%j_grs_strand_flip.stderr \
-									  --account INOUYE-SL3-CPU \
+									  --account INOUYE-SL2-CPU \
 										--partition skylake \
 										src/08_job_scripts/05_grs_preprocess.sh $GRS $Aptamer)
 
@@ -118,7 +118,7 @@ for pair in $(seq 1 $nPairs); do
                    --mem 25000 \
 									 --output logs/grs_pqtl_removed/$GRS\_$Aptamer\_%A_calculate_profile_chr%a.stdout \
 									 --error logs/grs_pqtl_removed/$GRS\_$Aptamer\_%A_calculate_profile_chr%a.stderr \
-									 --account INOUYE-SL3-CPU \
+									 --account INOUYE-SL2-CPU \
 									 --partition skylake \
 									 src/08_job_scripts/06_calculate_profile.sh $GRS $Aptamer 8192)
 
@@ -130,7 +130,7 @@ for pair in $(seq 1 $nPairs); do
 											 --time 1:0:0 \
 											 --output logs/grs_pqtl_removed/$GRS\_$Aptamer\_%j_combine_chr_files.stdout \
 											 --error logs/grs_pqtl_removed/$GRS\_$Aptamer\_%j_combine_chr_files.stderr \
-											 --account INOUYE-SL3-CPU \
+											 --account INOUYE-SL2-CPU \
 											 --partition skylake \
 											 src/08_job_scripts/07_chr_profile_combiner.sh $GRS $Aptamer)
 
@@ -154,7 +154,7 @@ test_job=$(sbatch --dependency afterok:$final_wait_list \
                   --time 1:0:0 \
                   --output logs/grs_pqtl_removed/%j_pair_retest.stdout \
                   --error logs/grs_pqtl_removed/%j_pair_retest.stderr \
-									--account INOUYE-SL3-CPU \
+									--account INOUYE-SL2-CPU \
 									--partition skylake \
                   --wrap "Rscript src/08_job_scripts/08_retest.R $pair_file")
 
@@ -166,6 +166,6 @@ combine_job=$(sbatch --dependency afterok:$test_job \
 										 --time 0:10:0 \
 										 --output logs/grs_pqtl_removed/final_cleanup_%j.out \
 										 --error logs/grs_pqtl_removed/final_cleanup_%j.err \
-										 --account INOUYE-SL3-CPU \
+										 --account INOUYE-SL2-CPU \
 										 --partition skylake \
 										 src/08_job_scripts/09_cleanup.sh)

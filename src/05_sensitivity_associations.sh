@@ -91,3 +91,16 @@ bash src/05_job_scripts/dispatcher.sh \
   season_adjusted \
   src/05_job_scripts/analysis_scripts/univariate_adjusted_for_season.R
 
+# Run view-specific adjustments
+if [ $view_file == "views/lung_function.txt" ]; then 
+	bash src/05_job_scripts/dispatcher.sh \
+		$view_file \
+		$(last_active_job) \
+		height_adjusted \
+		src/05_job_scripts/analysis_scripts/univariate_adjusted_for_height.R
+fi
+
+
+
+
+

@@ -8,35 +8,41 @@ registerDoMC(nCores)
 
 out_dir <- "analyses/mendelian_randomisation/pqtls/SOMAMERs_cis_LD"
 
-# Get TSS info about all proteins with cis-pQTLs at P < 1e-04
+# Get TSS info about all proteins with cis-pQTLs
 info <- fread("analyses/processed_traits/somalogic_proteins/trait_info.tsv")
-cis_1e4 <- fread("analyses/mendelian_randomisation/pqtls/cis_P_1e4.tsv")
+cis <- fread("analyses/mendelian_randomisation/pqtls/cis_hierarchical_correction.tsv")
 
 # Get relevant columns for filtering variants from BGEN files
-to_filter <- foreach(chrIdx = 1:22, .combine=rbind) %do% {
+to_filter <- foreach(chrIdx = 1:22, .combine=rbind) %dopar% {
 	chr_stats <- fread(sprintf("data/INTERVAL/reference_files/imputed_genotypes/impute_%s_interval.snpstats", chrIdx))
 	chr_stats <- rbind(
-		chr_stats[cis_1e4, on = .(chromosome=chr, position=pos, A_allele=EA, B_allele=OA), nomatch=0],
-		chr_stats[cis_1e4, on = .(chromosome=chr, position=pos, A_allele=OA, B_allele=EA), nomatch=0])
+		chr_stats[cis, on = .(chromosome=chr, position=pos, A_allele=EA, B_allele=OA), nomatch=0],
+		chr_stats[cis, on = .(chromosome=chr, position=pos, A_allele=OA, B_allele=EA), nomatch=0])
 	chr_stats <- chr_stats[, .(SOMAMER_ID, RSID, position, chromosome, A_allele, B_allele)]
 	return(chr_stats)
 }
 
 # Ignore ambiguous variants, these may confuse the calculations
-to_filter <- to_filter[A_allele != flip_strand(B_allele)] 
+# to_filter <- to_filter[A_allele != flip_strand(B_allele)] 
 
 # Filter to aptamers with > 1 pqtl
 n_pQTLs <- to_filter[,.N,by=.(SOMAMER_ID, chromosome)]
-n_pQTLs[, chr := as.character(chromosome)]
 
 # Split out protein information to gene level information
+info <- info[Type == "Protein", .(SOMAMER_ID, Gene.Name, chr, start)]
+info <- info[chr != "" & start != ""]
 locmap <- info[,.(
-  Gene=strsplit(Gene, ",")[[1]],
-  chr=strsplit(chr, ",")[[1]],
-  start=as.numeric(strsplit(start, ",")[[1]])),
+  Gene=strsplit(Gene.Name, "\\|")[[1]],
+  chr=strsplit(chr, "\\|")[[1]],
+  start=strsplit(start, "\\|")[[1]]),
   by=.(SOMAMER_ID)]
+locmap <- locmap[, .(start = strsplit(start, "\\;")[[1]]), by = .(SOMAMER_ID, Gene, chr)] # IGK has multiple start positions
+locmap <- locmap[!(chr %in% c("X", "Y"))] # no genotype data for X and Y chr, thus no cis-pQTLs
+locmap[, start := as.integer(start)]
+locmap[, chr := as.integer(chr)]
 
-locmap <- locmap[n_pQTLs[N > 1], on = .(SOMAMER_ID, chr)]
+# Filter to genes with more than 1 cis-PQTL
+locmap <- locmap[n_pQTLs[N > 1], on = .(SOMAMER_ID, chr=chromosome)]
 
 # Calculate window to for which to consider for LD
 locmap <- locmap[, .(window_start = min(start) - 1e6, 

@@ -30,7 +30,7 @@ assocs <- assocs[info, on=.(trait=variable), nomatch=0]
 assocs <- assocs[Type == "Protein"]
 prot_assocs <- assocs[, .(pval = prot_pvalue(pval, beta)),by=.(Target, Gene.Name, UniProt=UniProt.Id.Current.at.Uniprot)]
 prot_assocs[, fdr := p.adjust(pval, method="fdr")]
-prot_assocs <- prot_assocs[fdr < 0.05]
+#prot_assocs <- prot_assocs[fdr < 0.05]
 assocs <- assocs[prot_assocs[,.(Target, Gene.Name, UniProt)], 
                  on = .(Target, Gene.Name, UniProt.Id.Current.at.Uniprot=UniProt)]
 

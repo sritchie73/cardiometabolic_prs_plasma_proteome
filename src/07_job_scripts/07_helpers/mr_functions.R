@@ -519,20 +519,20 @@ gg_dose_response <- function(instruments, mro_dt, label=TRUE,
     g <- g + geom_abline(data=lines_dt, linetype=2, size=0.5,
               					 aes(intercept=intercept, slope=slope, color=method))
   }
-   Add dose response fills and colors. Ignored if above not on plot.
-   color_map <- c("Simple median" = "#004529", 
-		  						 "Weighted median" = "#238443",
-                  "Penalized weighted median" = "#78c679",
-                  "IVW" = "#810f7c", 
-                  "Penalized IVW" = "#88419d",
-                  "Robust IVW" = "#8c6bb1", 
-                  "Penalized robust IVW" = "#8c96c6",
-                  "MR-Egger" = "#e31a1c", 
-                  "Penalized MR-Egger" = "#fc4e2a",
-                  "Robust MR-Egger" = "#fd8d3c", 
-                  "Penalized robust MR-Egger" = "#feb24c")
-  g <- g + scale_color_manual(name = "Causal estimate (95% CI)", drop = TRUE, values = color_map) +
-           scale_fill_manual(name = "Causal estimate (95% CI)", drop = TRUE, values = color_map)
+  # Add dose response fills and colors. Ignored if above not on plot.
+  # color_map <- c("Simple median" = "#004529", 
+	#	  						 "Weighted median" = "#238443",
+  #                "Penalized weighted median" = "#78c679",
+  #                "IVW" = "#810f7c", 
+  #                "Penalized IVW" = "#88419d",
+  #                "Robust IVW" = "#8c6bb1", 
+  #                "Penalized robust IVW" = "#8c96c6",
+  #                "MR-Egger" = "#e31a1c", 
+  #                "Penalized MR-Egger" = "#fc4e2a",
+  #                "Robust MR-Egger" = "#fd8d3c", 
+  #                "Penalized robust MR-Egger" = "#feb24c")
+  #g <- g + scale_color_manual(name = "Causal estimate (95% CI)", drop = TRUE, values = color_map) +
+  #         scale_fill_manual(name = "Causal estimate (95% CI)", drop = TRUE, values = color_map)
 
   # Show instrument betas on exposure and outcome (and SEs)
   g <- g + geom_errorbarh(height=0, color=bar.color, size=bar.width) + 

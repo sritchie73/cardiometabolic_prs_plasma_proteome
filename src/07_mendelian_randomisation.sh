@@ -41,17 +41,17 @@ mkdir -p logs/mendelian_randomisation/
 
 # Process disease GWAS summary statistics for each GRS:
 n_grss=$(tail -n +2 $view_file | wc -l | cut -f 1 -d " ")
-ss_job=$(sbatch --dependency afterany:$previous_job \
-                --parsable \
-                --job-name "GWAS SS" \
-                --time 1:0:0 \
-                --array 1-$n_grss \
-                --mem 16000 \
-                --output logs/mendelian_randomisation/process_ss_%A_%a.out \
-                --error logs/mendelian_randomisation/process_ss_%A_%a.err \
-								--account INOUYE-SL3-CPU \
-                --partition skylake \
-                src/07_job_scripts/01_process_summary_stats.sh $view_file)
+## ss_job=$(sbatch --dependency afterany:$previous_job \
+##                 --parsable \
+##                 --job-name "GWAS SS" \
+##                 --time 1:0:0 \
+##                 --array 1-$n_grss \
+##                 --mem 16000 \
+##                 --output logs/mendelian_randomisation/process_ss_%A_%a.out \
+##                 --error logs/mendelian_randomisation/process_ss_%A_%a.err \
+## 								--account INOUYE-SL2-CPU \
+##                 --partition skylake \
+##                 src/07_job_scripts/01_process_summary_stats.sh $view_file)
 ss_job=$previous_job
 
 
@@ -87,7 +87,7 @@ if [ ! -f "analyses/mendelian_randomisation/pqtls/cis_P_1e4.tsv" ]; then
 									 --mem 16384 \
 									 --output logs/mendelian_randomisation/call_cis_pqtls_%j.out \
 									 --error logs/mendelian_randomisation/call_cis_pqtls_%j.err \
-									 --account INOUYE-SL3-CPU \
+									 --account INOUYE-SL2-CPU \
 									 --partition skylake \
 									 --wrap "Rscript src/07_job_scripts/02_call_cis_pqtls.R")
 else
@@ -102,17 +102,17 @@ fi
 # are always a subset of these.
 if [ ! -d "analyses/mendelian_randomisation/pqtls/SOMAMERs_cis_LD/" ]; then
   mkdir -p analyses/mendelian_randomisation/pqtls/SOMAMERs_cis_LD/
-  nCores=32
+  nCores=16
 	ld_job=$(sbatch --dependency afterany:$cis_job \
 								  --parsable \
 								  --job-name "cis-pQTL-LD" \
-								  --time 2:0:0 \
+								  --time 12:0:0 \
 								  --ntasks 1 \
 								  --cpus-per-task $nCores \
 								  --output logs/mendelian_randomisation/cis_pqtl_ld_%j.out \
 								  --error logs/mendelian_randomisation/cis_pqtl_ld_%j.err \
-									--account INOUYE-SL3-CPU \
-								  --partition skylake \
+									--account INOUYE-SL2-CPU \
+								  --partition skylake,skylake-himem \
 								  --wrap "Rscript src/07_job_scripts/03_cis_pqtl_ld.R $nCores")
 else
   ld_job=$cis_job
@@ -132,7 +132,7 @@ if [ ! -d "analyses/mendelian_randomisation/pqtls/conditional_pQTLs_tag_LD" ]; t
 								   --cpus-per-task $nCores \
 								   --output logs/mendelian_randomisation/trans_pqtl_ld_%j.out \
 								   --error logs/mendelian_randomisation/trans_pqtl_ld_%j.err \
-									 --account INOUYE-SL3-CPU \
+									 --account INOUYE-SL2-CPU \
 								   --partition skylake \
 								   --wrap "Rscript src/07_job_scripts/04_published_pqtl_ld.R $nCores")
 else
@@ -144,26 +144,40 @@ nPRS=$(sed 1d $view_file | wc -l)
 map_job=$(sbatch --dependency afterany:$ld_job2 \
                  --parsable \
                  --job-name "Map summary stats" \
-                 --time 1:0:0 \
+                 --time 24:0:0 \
                  --array 1-$nPRS \
-                 --mem 36000 \
+                 --mem 64000 \
                  --output logs/mendelian_randomisation/map_summary_stats_%A_%a.out \
                  --error logs/mendelian_randomisation/map_summary_stats_%A_%a.err \
-								 --account INOUYE-SL3-CPU \
-								 --partition skylake \
+								 --account INOUYE-SL2-CPU \
+								 --partition skylake,skylake-himem \
                  --wrap "Rscript src/07_job_scripts/05_map_summary_stats.R $view_file")
+
+# Test for co-localisation of pQTLs with GWAS summary statistics
+nPRS=$(sed 1d $view_file | wc -l)
+coloc_job=$(sbatch --dependency=afterany:$map_job \
+									 --parsable \
+									 --job-name "GRS coloc" \
+									 --time 5:0:0 \
+									 --array 1-$nPRS \
+									 --mem 16000 \
+									 --output logs/mendelian_randomisation/colocalisation_%A_%a.out \
+									 --error logs/mendelian_randomisation/colocalisation_%A_%a.err \
+									 --account INOUYE-SL2-CPU \
+									 --partition skylake \
+									 --wrap "Rscript src/07_job_scripts/06_colocalisation.R $view_file")
 
 # Finally, run mendelian randomisation analysis
 nPRS=$(sed 1d $view_file | wc -l)
-mr_job=$(sbatch --dependency afterany:$map_job \
+mr_job=$(sbatch --dependency afterany:$coloc_job \
 								--parsable \
 								--job-name "GRS MR" \
-								--time 1:0:0 \
+								--time 3:0:0 \
 								--array 1-$nPRS \
 								--mem 16000 \
 								--output logs/mendelian_randomisation/mr_%A_%a.out \
 								--error logs/mendelian_randomisation/mr_%A_%a.err \
-							  --account INOUYE-SL3-CPU \
+							  --account INOUYE-SL2-CPU \
 							  --partition skylake \
 								--wrap "Rscript src/07_job_scripts/07_mendelian_randomisation.R $view_file")
 

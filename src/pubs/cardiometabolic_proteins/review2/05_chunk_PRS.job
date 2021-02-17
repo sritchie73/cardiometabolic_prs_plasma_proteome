@@ -1,0 +1,25 @@
+#!/bin/bash
+
+if [ ! -z ${SLURM_JOB_ID+x} ]; then
+   echo "This script should be executed directly, not with sbatch."
+   exit 1
+fi
+
+if [ -z "$1" ]; then
+  previous_job=1
+else
+  previous_job=$1
+fi
+
+out_dir=analyses/pub/cardiometabolic_proteins/review2
+mkdir -p $out_dir/slurm_logs
+
+sbatch --job-name "chunk PRSs" \
+       --dependency afterany:$previous_job \
+       --array 1-22 --mem 24000 \
+       --time 3:0:0 --nodes 1 \
+       --partition skylake,skylake-himem \
+			 --output $out_dir/slurm_logs/slurm-%A_%a.out \
+			 --error $out_dir/slurm_logs/slurm-%A_%a.err \
+       --account INOUYE-SL2-CPU \
+       --wrap "Rscript src/pubs/cardiometabolic_proteins/review2/05_chunk_PRS.R"

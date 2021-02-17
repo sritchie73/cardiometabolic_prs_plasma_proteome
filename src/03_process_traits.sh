@@ -37,8 +37,23 @@ prep_job=$(sbatch --dependency afterany:$previous_job \
 									--cpus-per-task 10 \
                   src/03_job_scripts/01_process_traits.sh)
 
+# Calculate and plot correlation matrices
+# The output of this is required for some later comparison scripts
+cor_job=$(sbatch --dependency aftercorr:$prep_job \
+                 --kill-on-invalid-dep yes \
+                 --parsable \
+								 --account INOUYE-SL3-CPU \
+                 --job-name "correlations" \
+                 --time 3:0:0 \
+                 --output logs/omic_platform_correlations_%j.stdout \
+                 --error logs/omic_platform_correlations_%j.stderr \
+                 --partition skylake \
+								 --ntasks 1 \
+								 --cpus-per-task 1 \
+                 --wrap "Rscript src/03_job_scripts/02_omic_correlations.R")
+
 # Process QTL files so that we have a list of variables and variants in the omic dir
-qtl_job=$(sbatch --dependency aftercorr:$prep_job \
+qtl_job=$(sbatch --dependency aftercorr:$tests_job \
                  --kill-on-invalid-dep yes \
                  --parsable \
                  --job-name "process QTLs" \
