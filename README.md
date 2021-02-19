@@ -1,5 +1,8 @@
 # README
 
+[![DOI](https://zenodo.org/badge/246847880.svg)](https://zenodo.org/badge/latestdoi/246847880)
+
+
 This repository houses and documents the code used to generate the results in the study Ritchie SC *et al.* Integrative analysis of the plasma proteome and polygenic risk of cardiometabolic diseases. *bioRxiv*, doi: 10.1101/2019.12.14.876474 (https://www.biorxiv.org/content/10.1101/2019.12.14.876474v2.article-info).
 
 This code has not been designed to regenerate the results as-is for third-parties. It has been written to run on a high-performance computing cluster at the University of Cambridge - it includes job submission scripts that are written specifically for this cluster's setup, and cannot which cannot be generalised. The underlying data is also not provided as part of this repo - these must be downloaded separately (see Underlying Data section below) and stored in the locations given in the hard-coded filepaths in these scripts. After several rounds of revision over multiple years the code base has expanded to cover many analyses not included in the paper and analyses have evolved over time. 
