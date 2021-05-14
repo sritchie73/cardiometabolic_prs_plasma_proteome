@@ -53,6 +53,9 @@ The following software and versions were used to run these scripts:
      - medflex version 0.6-7
      - gridExtra version 2.3
      - seriation version 1.2-9
+     - httr version 1.4.2
+     - jsonlite version 1.7.1
+     - xml2 version 1.3.2
  - The BGEN software suite (https://www.well.ox.ac.uk/~gav/bgen_format/software.html) including:
      - bgenix version 1.1.4
      - qctool version 2.0.5, alised as qctool2 in the scripts
